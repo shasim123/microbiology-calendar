@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Microbiology Course Calendar</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin:0;
+        padding:0;
+        background: #edf6f9; /* light background hinting a sterile environment */
+    }
+
+    /* Navigation Bar */
+    .navbar {
+        display: flex;
+        background: #007f5f; /* darker greenish-blue */
+        color: #fff;
+        padding: 15px;
+        align-items: center;
+    }
+    .navbar h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+    .navbar a {
+        color: #fff;
+        text-decoration: none;
+        margin-left: 30px;
+        font-size: 18px;
+        transition: opacity 0.3s;
+    }
+
+    .navbar a:hover {
+        opacity: 0.7;
+    }
+
+    /* Container */
+    .container {
+        display: flex;
+        flex-direction: row;
+        padding: 20px;
+    }
+
+    .calendar-container {
+        flex: 2;
+        margin-right: 20px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #90be6d; /* green border */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* Month Tabs */
+    .month-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .month-tabs button {
+        padding: 8px 15px;
+        border: none;
+        background: #43aa8b; /* greenish blue */
+        color: #fff;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .month-tabs button.active {
+        background: #007f5f;
+        color: #fff;
+    }
+    .month-tabs button:hover {
+        background: #007f5f;
+        color:#fff;
+    }
+
+    /* Calendar Grid */
+    .calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        text-align: center;
+    }
+
+    .calendar .day-header {
+        font-weight: bold;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+        color: #023047; /* darker text color */
+    }
+
+    .calendar .day {
+        background: #f0f9f0;
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        min-height: 60px;
+        display:flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        font-size:14px;
+        position:relative;
+        transition: background 0.3s;
+    }
+
+    .calendar .day.has-event {
+        background: #d0f0c0; /* light green to show an event */
+        border: 1px solid #a3d977; 
+    }
+
+    .calendar .day:hover {
+        background: #b5e48c; /* hover color */
+    }
+
+    .calendar .day span {
+        font-size:14px;
+    }
+
+    /* Current day highlight */
+    .calendar .day.current-day {
+        border: 2px solid #d62828; 
+        background: #ffe8d6; /* highlight current day differently */
+    }
+
+    .details-container {
+        flex: 1;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #90be6d;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        max-height: 85vh;
+    }
+
+    .details-container h2 {
+        margin-top: 0;
+        font-size: 20px;
+        color: #023047;
+    }
+
+    .details-container p {
+        margin: 8px 0;
+        color: #023047;
+    }
+
+    .no-details {
+        color: #666;
+    }
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+        .container {
+            flex-direction: column;
+        }
+        .calendar-container, .details-container {
+            margin: 0 0 20px 0;
+            max-width: 100%;
+        }
+    }
+
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>Microbiology Course Calendar</h1>
+    <a href="#home">Home</a>
+</div>
+
+<div class="container">
+    <div class="calendar-container">
+        <div class="month-tabs">
+            <button class="month-tab-btn" data-month="january">January</button>
+            <button class="month-tab-btn" data-month="february">February</button>
+            <button class="month-tab-btn" data-month="march">March</button>
+            <button class="month-tab-btn" data-month="april">April</button>
+        </div>
+        <div id="calendar"></div>
+    </div>
+    <div class="details-container">
+        <h2>Details</h2>
+        <div id="details"></div>
+    </div>
+</div>
+
+<script>
+    // Original Monday entries
+    const scheduleData = {
+      "2025-01-13": {
+        week: "Week 1",
+        date: "Jan 13",
+        topic: "Intro to microbial world, Microscopy, Bacterial cell structure",
+        readings: "Chapter 1, Chapter 2, Chapter 3",
+        assignment: "In class activity",
+        presentation: "",
+        quiz: "",
+        exam: ""
+      },
+      "2025-01-20": {
+        week: "Week 2",
+        date: "Jan 20",
+        topic: "Archaeal cell structure, Eukaryotic cell structure, Viruses",
+        readings: "Chapter 4, Chapter 5, Chapter 6",
+        assignment: "Case study",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: ""
+      },
+      "2025-01-27": {
+        week: "Week 3",
+        date: "Jan 27",
+        topic: "Bacterial and Archaeal Growth, Control of Microorganisms in the environment",
+        readings: "Chapter 7, Chapter 8",
+        assignment: "In class activity",
+        presentation: "Primary literature",
+        quiz: "Connect quizzes due date",
+        exam: "Exam one"
+      },
+      "2025-02-03": {
+        week: "Week 4",
+        date: "Feb 3",
+        topic: "Antimicrobial chemotherapy, Introduction to metabolism, Catabolism",
+        readings: "Chapter 9, Chapter 10, Chapter 11",
+        assignment: "Case study",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: ""
+      },
+      "2025-02-10": {
+        week: "Week 5",
+        date: "Feb 10",
+        topic: "Anabolism, Bacterial genome replication and expression, Regulation of cellular processes",
+        readings: "Chapter 12, Chapter 13, Chapter 14",
+        assignment: "Case study",
+        presentation: "Primary literature",
+        quiz: "Connect quizzes due date",
+        exam: ""
+      },
+      "2025-02-17": {
+        week: "Week 6",
+        date: "Feb 17",
+        topic: "Eukaryotic and archaea genome replication and expression, Mechanism of genetic variation",
+        readings: "Chapter 15, Chapter 16",
+        assignment: "In class activity",
+        presentation: "First presentation how microbe cause disease",
+        quiz: "Connect quizzes due date",
+        exam: "Exam two"
+      },
+      "2025-02-24": {
+        week: "Week 7",
+        date: "Feb 24",
+        topic: "Microbial DNA technologies, Microbial genomics, archaea",
+        readings: "Chapter 17, Chapter 18, Chapter 19",
+        assignment: "Case study",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: ""
+      },
+      "2025-03-03": {
+        week: "Week 8",
+        date: "Mar 3",
+        topic: "Nonproteobacterial gram negative bacteria, proteobacteria, Gram positive bacteria",
+        readings: "Chapter 20, Chapter 21, Chapter 22",
+        assignment: "In class activity",
+        presentation: "Primary literature",
+        quiz: "Connect quizzes due date",
+        exam: "Mid-Semester Examinations"
+      },
+      "2025-03-10": {
+        week: "Week 9",
+        date: "Mar 10",
+        topic: "Fungi, exploring microbes in ecosystem, Microbial interaction (No class Mar 12)",
+        readings: "Chapter 24, Chapter 26, Chapter 27",
+        assignment: "Case study, Primary literature, Review paper",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: "Last Day to Withdraw From a Course: March 11th"
+      },
+      "2025-03-17": {
+        week: "Week 10",
+        date: "Mar 17",
+        topic: "Spring break",
+        readings: "",
+        assignment: "",
+        presentation: "",
+        quiz: "",
+        exam: ""
+      },
+      "2025-03-24": {
+        week: "Week 11",
+        date: "Mar 24",
+        topic: "Innate host resistance",
+        readings: "Chapter 31",
+        assignment: "Case study",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: "Exam 3"
+      },
+      "2025-03-31": {
+        week: "Week 12",
+        date: "Mar 31",
+        topic: "Innate immunity, Adaptive immunity, The microbe human ecosystem",
+        readings: "Chapter 32, Chapter 33",
+        assignment: "In class activity",
+        presentation: "Second presentation: How the immune system combat microbe",
+        quiz: "Connect quizzes due date",
+        exam: ""
+      },
+      "2025-04-07": {
+        week: "Week 13",
+        date: "Apr 7",
+        topic: "Infection and pathogenicity, Epidemiology and public health microbiology, Clinical microbiology and immunology",
+        readings: "Chapter 34, Chapter 35, Chapter 36",
+        assignment: "Case study",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: ""
+      },
+      "2025-04-14": {
+        week: "Week 14",
+        date: "Apr 14",
+        topic: "Human disease caused by viruses, Human disease caused by bacteria, Human disease caused by fungi",
+        readings: "Chapter 37, Chapter 38, Chapter 39",
+        assignment: "Case study",
+        presentation: "",
+        quiz: "Connect quizzes due date",
+        exam: "Student Course Evaluations April 18th, Easter Holiday April 18th"
+      },
+      "2025-04-21": {
+        week: "Week 15",
+        date: "Apr 21",
+        topic: "Last Day of Classes April 23rd",
+        readings: "",
+        assignment: "",
+        presentation: "Final presentation (Students selected topic)",
+        quiz: "",
+        exam: ""
+      },
+      "2025-04-28": {
+        week: "Week 16",
+        date: "Apr 28",
+        topic: "Final exam based on university assigned date and time (April 28 - May 2)",
+        readings: "",
+        assignment: "",
+        presentation: "",
+        quiz: "",
+        exam: "Final Exam"
+      }
+    };
+
+    // Add Wednesday entries for each week (same details)
+    scheduleData["2025-01-15"] = {...scheduleData["2025-01-13"], date: "Jan 15"};
+    scheduleData["2025-01-22"] = {...scheduleData["2025-01-20"], date: "Jan 22"};
+    scheduleData["2025-01-29"] = {...scheduleData["2025-01-27"], date: "Jan 29"};
+    scheduleData["2025-02-05"] = {...scheduleData["2025-02-03"], date: "Feb 5"};
+    scheduleData["2025-02-12"] = {...scheduleData["2025-02-10"], date: "Feb 12"};
+    scheduleData["2025-02-19"] = {...scheduleData["2025-02-17"], date: "Feb 19"};
+    scheduleData["2025-02-26"] = {...scheduleData["2025-02-24"], date: "Feb 26"};
+    scheduleData["2025-03-05"] = {...scheduleData["2025-03-03"], date: "Mar 5"};
+    scheduleData["2025-03-12"] = {...scheduleData["2025-03-10"], date: "Mar 12"};
+    scheduleData["2025-03-19"] = {...scheduleData["2025-03-17"], date: "Mar 19"};
+    scheduleData["2025-03-26"] = {...scheduleData["2025-03-24"], date: "Mar 26"};
+    scheduleData["2025-04-02"] = {...scheduleData["2025-03-31"], date: "Apr 2"};
+    scheduleData["2025-04-09"] = {...scheduleData["2025-04-07"], date: "Apr 9"};
+    scheduleData["2025-04-16"] = {...scheduleData["2025-04-14"], date: "Apr 16"};
+    scheduleData["2025-04-23"] = {...scheduleData["2025-04-21"], date: "Apr 23"};
+    scheduleData["2025-04-30"] = {...scheduleData["2025-04-28"], date: "Apr 30"};
+
+    const months = {
+        january: {year:2025, month:0},
+        february: {year:2025, month:1},
+        march: {year:2025, month:2},
+        april: {year:2025, month:3}
+    };
+
+    const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const calendarDiv = document.getElementById("calendar");
+    const detailsDiv = document.getElementById("details");
+    const monthButtons = document.querySelectorAll(".month-tab-btn");
+
+    // Get current local date info
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonthNum = today.getMonth();
+    const currentDateNum = today.getDate();
+
+    // Construct local date string in YYYY-MM-DD format
+    function pad(n) { return n < 10 ? '0' + n : n; }
+    const localYMD = `${currentYear}-${pad(currentMonthNum+1)}-${pad(currentDateNum)}`;
+
+    let highlightYMD = null;
+    let currentMonthKey = "january";
+
+    // Check if current date is within Jan-April 2025
+    if (currentYear === 2025 && currentMonthNum >= 0 && currentMonthNum <= 3) {
+        // We are in Jan-April 2025
+        const monthKeys = ["january", "february", "march", "april"];
+        currentMonthKey = monthKeys[currentMonthNum];
+        highlightYMD = localYMD;
+    }
+
+    function renderCalendar(monthKey) {
+        calendarDiv.innerHTML = "";
+
+        document.querySelectorAll(".month-tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelector(`.month-tab-btn[data-month="${monthKey}"]`).classList.add("active");
+
+        const {year, month} = months[monthKey];
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month+1, 0);
+        const startDay = firstDay.getDay(); 
+        const totalDays = lastDay.getDate();
+
+        // Create headers
+        const headers = document.createElement("div");
+        headers.className = "calendar";
+        dayNames.forEach(d => {
+            const h = document.createElement("div");
+            h.className = "day-header";
+            h.textContent = d;
+            headers.appendChild(h);
+        });
+        calendarDiv.appendChild(headers);
+
+        const dates = document.createElement("div");
+        dates.className = "calendar";
+
+        for (let i = 0; i < startDay; i++){
+            const emptyCell = document.createElement("div");
+            emptyCell.className = "day";
+            emptyCell.style.visibility = "hidden";
+            dates.appendChild(emptyCell);
+        }
+
+        for (let d = 1; d <= totalDays; d++){
+            const dateObj = new Date(year, month, d);
+            const cellYMD = `${year}-${pad(month+1)}-${pad(d)}`;
+            const dayCell = document.createElement("div");
+            dayCell.className = "day";
+
+            if (scheduleData[cellYMD]) {
+                dayCell.classList.add("has-event");
+            }
+
+            // If this day is today (highlight day)
+            if (highlightYMD === cellYMD) {
+                dayCell.classList.add("current-day");
+            }
+
+            dayCell.innerHTML = `<span>${d}</span>`;
+            dayCell.addEventListener("click", () => showDetails(cellYMD));
+            dates.appendChild(dayCell);
+        }
+
+        calendarDiv.appendChild(dates);
+    }
+
+    function showDetails(ymd) {
+        const data = scheduleData[ymd];
+        if (!data) {
+            detailsDiv.innerHTML = "<p class='no-details'>No details for this date.</p>";
+            return;
+        }
+        const isToday = (ymd === highlightYMD) ? "<span style='color:#d62828; font-weight:bold;'>Today</span><br>" : "";
+        detailsDiv.innerHTML = `
+          ${isToday}
+          <h3>${data.week} - ${data.date}</h3>
+          <p><strong>Topic:</strong> ${data.topic}</p>
+          <p><strong>Readings:</strong> ${data.readings || "None"}</p>
+          <p><strong>Assignment:</strong> ${data.assignment || "None"}</p>
+          <p><strong>Presentation:</strong> ${data.presentation || "None"}</p>
+          <p><strong>Quiz:</strong> ${data.quiz || "None"}</p>
+          <p><strong>Exam:</strong> ${data.exam || "None"}</p>
+        `;
+    }
+
+    // Initial render
+    renderCalendar(currentMonthKey);
+
+    // Handle month tab switching
+    monthButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            renderCalendar(btn.dataset.month);
+            detailsDiv.innerHTML = "<p class='no-details'>Select a date to see details.</p>";
+        });
+    });
+
+    // Default details message
+    detailsDiv.innerHTML = "<p class='no-details'>Select a date to see details.</p>";
+</script>
+
+</body>
+</html>
